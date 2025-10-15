@@ -1,0 +1,146 @@
+@{
+    ViewData["Title"] = "Access Denied - Safe Vault";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-danger shadow-lg">
+                <div class="card-header bg-danger text-white text-center">
+                    <h1 class="display-1 mb-0">
+                        <i class="fas fa-ban"></i>
+                    </h1>
+                    <h3 class="mb-0">Access Denied</h3>
+                </div>
+                
+                <div class="card-body text-center p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-shield-alt fa-3x text-danger mb-3"></i>
+                        <h4 class="text-danger">Insufficient Permissions</h4>
+                        <p class="lead text-muted">
+                            You don't have the required permissions to access this resource.
+                        </p>
+                    </div>
+
+                    <div class="alert alert-warning" role="alert">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Administrative Access Required
+                        </h6>
+                        <p class="mb-0">
+                            This page requires administrator privileges. Please contact your system administrator if you believe you should have access to this resource.
+                        </p>
+                    </div>
+
+                    <div class="row text-center mt-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="card bg-light h-100">
+                                <div class="card-body">
+                                    <i class="fas fa-user fa-2x text-primary mb-2"></i>
+                                    <h6>Current User</h6>
+                                    <p class="mb-0 text-muted">@User.Identity?.Name</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card bg-light h-100">
+                                <div class="card-body">
+                                    <i class="fas fa-user-tag fa-2x text-info mb-2"></i>
+                                    <h6>Your Role</h6>
+                                    <p class="mb-0 text-muted">@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="btn-group" role="group">
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+                                if (userRole == "Admin")
+                                {
+                                    <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-primary">
+                                        <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a href="@Url.Action("Dashboard", "User")" class="btn btn-primary">
+                                        <i class="fas fa-tachometer-alt me-2"></i>User Dashboard
+                                    </a>
+                                }
+                            }
+                            else
+                            {
+                                <a href="@Url.Action("Login", "Auth")" class="btn btn-primary">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                                </a>
+                            }
+                            
+                            <button onclick="history.back()" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Go Back
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <div class="card bg-light">
+                    <div class="card-body py-3">
+                        <h6 class="text-success mb-2">
+                            <i class="fas fa-info-circle me-2"></i>Security Information
+                        </h6>
+                        <small class="text-muted">
+                            This security measure protects sensitive administrative functions from unauthorized access.
+                            All access attempts are logged for security monitoring.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Log the access denied attempt (for demonstration)
+        console.log('Access denied logged:', {
+            timestamp: new Date().toISOString(),
+            user: '@User.Identity?.Name',
+            role: '@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value',
+            requestedUrl: '@ViewBag.ReturnUrl'
+        });
+
+        // Auto-redirect after 30 seconds if user prefers
+        setTimeout(function() {
+            const userRole = '@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value';
+            if (userRole && confirm('Would you like to be redirected to your dashboard?')) {
+                if (userRole === 'Admin') {
+                    window.location.href = '@Url.Action("Dashboard", "Admin")';
+                } else {
+                    window.location.href = '@Url.Action("Dashboard", "User")';
+                }
+            }
+        }, 30000);
+    </script>
+}
+
+<style>
+    .card {
+        border-radius: 15px;
+    }
+    
+    .btn {
+        border-radius: 8px;
+    }
+    
+    .alert {
+        border-radius: 10px;
+    }
+    
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+</style>

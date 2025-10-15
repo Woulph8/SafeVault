@@ -1,0 +1,103 @@
+@{
+    ViewData["Title"] = "Profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user me-2"></i>User Profile
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div class="profile-avatar mb-3">
+                                <i class="fas fa-user-circle fa-5x text-muted"></i>
+                            </div>
+                            <h5>@User.Identity?.Name</h5>
+                            <p class="text-muted">@User.FindFirst("Role")?.Value</p>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="profile-details">
+                                <h6 class="text-primary">Account Information</h6>
+                                <hr>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-sm-4">
+                                        <strong>Username:</strong>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        @User.Identity?.Name
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-sm-4">
+                                        <strong>Role:</strong>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        <span class="badge bg-@(User.IsInRole("Admin") ? "danger" : "primary")">
+                                            @User.FindFirst("Role")?.Value
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-sm-4">
+                                        <strong>User ID:</strong>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        @User.FindFirst("UserId")?.Value
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-sm-4">
+                                        <strong>Account Status:</strong>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        <span class="badge bg-success">Active</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="text-primary">Security Options</h6>
+                            <div class="d-grid gap-2 d-md-flex">
+                                <a href="@Url.Action("ChangePassword", "Auth")" class="btn btn-outline-primary">
+                                    <i class="fas fa-key me-2"></i>Change Password
+                                </a>
+                                <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+                                    <i class="fas fa-arrow-left me-2"></i>Go Back
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-avatar {
+    margin-bottom: 1rem;
+}
+
+.profile-details .row {
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.profile-details .row:last-child {
+    border-bottom: none;
+}
+</style>

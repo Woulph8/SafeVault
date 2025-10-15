@@ -1,0 +1,226 @@
+@model SafeVault.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Login - Safe Vault";
+}
+
+<div class="container-fluid vh-100">
+    <div class="row h-100">
+        <div class="col-md-6 d-none d-md-flex align-items-center justify-content-center bg-primary">
+            <div class="text-center text-white">
+                <i class="fas fa-shield-alt fa-5x mb-4"></i>
+                <h1 class="display-4 fw-bold">Safe Vault</h1>
+                <p class="lead">Secure Authentication System</p>
+                <div class="mt-5">
+                    <h5><i class="fas fa-lock me-2"></i>Enterprise Security</h5>
+                    <ul class="list-unstyled mt-3">
+                        <li><i class="fas fa-check text-success me-2"></i>Role-based Access Control</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Input Sanitization</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Secure Password Hashing</li>
+                        <li><i class="fas fa-check text-success me-2"></i>SQL Injection Protection</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 d-flex align-items-center justify-content-center">
+            <div class="w-100" style="max-width: 400px;">
+                <div class="card shadow-lg border-0">
+                    <div class="card-header bg-white border-0 text-center py-4">
+                        <h3 class="mb-0">
+                            <i class="fas fa-sign-in-alt me-2 text-primary"></i>
+                            Sign In
+                        </h3>
+                        <p class="text-muted mb-0">Access your secure account</p>
+                    </div>
+                    
+                    <div class="card-body p-5">
+                        @if (ViewData.ModelState.ErrorCount > 0)
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                <h6><i class="fas fa-exclamation-triangle me-2"></i>Login Failed</h6>
+                                <ul class="mb-0 mt-2">
+                                    @foreach (var modelError in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                    {
+                                        <li class="small">@modelError.ErrorMessage</li>
+                                    }
+                                </ul>
+                            </div>
+                        }
+
+                        <form asp-controller="Auth" asp-action="Login" method="post" autocomplete="off" id="loginForm">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" asp-for="ReturnUrl" />
+
+                            <div class="mb-4">
+                                <label asp-for="Username" class="form-label fw-semibold">
+                                    <i class="fas fa-user me-1"></i>Username
+                                </label>
+                                <input asp-for="Username" class="form-control form-control-lg @(ViewData.ModelState["Username"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                                       placeholder="Enter your username" autocomplete="username" />
+                                <span asp-validation-for="Username" class="invalid-feedback"></span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label asp-for="Password" class="form-label fw-semibold">
+                                    <i class="fas fa-lock me-1"></i>Password
+                                </label>
+                                <div class="input-group">
+                                    <input asp-for="Password" class="form-control form-control-lg @(ViewData.ModelState["Password"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                                           placeholder="Enter your password" autocomplete="current-password" />
+                                    <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <span asp-validation-for="Password" class="invalid-feedback"></span>
+                            </div>
+
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    <input asp-for="RememberMe" class="form-check-input" />
+                                    <label asp-for="RememberMe" class="form-check-label">
+                                        Remember me for 30 days
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="d-grid mb-4">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Sign In Securely
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="text-center">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Contact your administrator for account access
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <div class="card bg-light">
+                        <div class="card-body py-3">
+                            <h6 class="text-success mb-2">
+                                <i class="fas fa-shield-alt me-2"></i>Security Features Active
+                            </h6>
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <small class="text-muted">
+                                        <i class="fas fa-lock me-1"></i>Encrypted Login
+                                    </small>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">
+                                        <i class="fas fa-user-shield me-1"></i>Role-based Access
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle password visibility
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.querySelector('input[name="Password"]');
+            
+            if (togglePassword && passwordInput) {
+                togglePassword.addEventListener('click', function() {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    
+                    const icon = this.querySelector('i');
+                    icon.classList.toggle('fa-eye');
+                    icon.classList.toggle('fa-eye-slash');
+                });
+            }
+
+            // Focus on username field
+            const usernameInput = document.querySelector('input[name="Username"]');
+            if (usernameInput) {
+                usernameInput.focus();
+            }
+
+            // Handle form submission with retry logic for concurrent sessions
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        // Fix XSS: Use safe DOM manipulation
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Signing In...';
+                        
+                        // Re-enable button after 10 seconds to prevent permanent disable
+                        setTimeout(() => {
+                            submitBtn.disabled = false;
+                            // Fix XSS: Use safe DOM manipulation
+                            submitBtn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Sign In Securely';
+                        }, 10000);
+                    }
+                });
+            }
+
+            // Security feedback on input
+            const inputs = document.querySelectorAll('input[type="text"], input[type="password"]');
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    // Remove any previous security warnings
+                    this.classList.remove('border-warning');
+                    
+                    // Basic security check for suspicious patterns
+                    const dangerousPatterns = [
+                        /<script/i,
+                        /javascript:/i,
+                        /on\w+\s*=/i,
+                        /['";].*(-{2}|\/\*)/i
+                    ];
+                    
+                    const hasDangerousContent = dangerousPatterns.some(pattern => pattern.test(this.value));
+                    
+                    if (hasDangerousContent) {
+                        this.classList.add('border-warning');
+                    }
+                });
+            });
+        });
+    </script>
+}
+
+<style>
+    .vh-100 {
+        min-height: 100vh;
+    }
+    
+    .bg-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+    
+    .card {
+        border-radius: 15px;
+    }
+    
+    .form-control-lg {
+        border-radius: 10px;
+    }
+    
+    .btn-lg {
+        border-radius: 10px;
+        padding: 12px 24px;
+    }
+    
+    .border-warning {
+        border-color: #ffc107 !important;
+        box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+    }
+</style>

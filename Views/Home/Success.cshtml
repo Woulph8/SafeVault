@@ -1,0 +1,108 @@
+@{
+    ViewData["Title"] = "Success - Secure Submission";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-check-circle me-2"></i>Form Submitted Successfully
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success" role="alert">
+                        <h5 class="alert-heading">✅ Security Check Passed!</h5>
+                        <p class="mb-0">@ViewBag.Message</p>
+                    </div>
+
+                    @if (ViewBag.UserId != null)
+                    {
+                        <div class="alert alert-info" role="alert">
+                            <h6><i class="fas fa-database me-2"></i>Database Record Created</h6>
+                            <p class="mb-0">
+                                <strong>User ID:</strong> @ViewBag.UserId<br>
+                                <strong>Created:</strong> @ViewBag.CreatedDate
+                            </p>
+                        </div>
+                    }
+
+                    <h5 class="mt-4">Sanitized Input Data & Database Storage:</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Sanitized Value</th>
+                                    <th>Security Status</th>
+                                    <th>Database Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Username</strong></td>
+                                    <td><code>@ViewBag.SanitizedUsername</code></td>
+                                    <td><span class="badge bg-success">✓ Clean</span></td>
+                                    <td><span class="badge bg-primary">✓ Stored Securely</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Email</strong></td>
+                                    <td><code>@ViewBag.SanitizedEmail</code></td>
+                                    <td><span class="badge bg-success">✓ Clean</span></td>
+                                    <td><span class="badge bg-primary">✓ Stored Securely</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4">
+                        <h6 class="text-success">
+                            <i class="fas fa-shield-alt me-2"></i>Security Measures Applied:
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex align-items-center">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        <small>SQL Injection Prevention</small>
+                                    </li>
+                                    <li class="list-group-item d-flex align-items-center">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        <small>XSS Attack Mitigation</small>
+                                    </li>
+                                    <li class="list-group-item d-flex align-items-center">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        <small>HTML Tag Removal</small>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex align-items-center">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        <small>Special Character Escaping</small>
+                                    </li>
+                                    <li class="list-group-item d-flex align-items-center">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        <small>Input Length Validation</small>
+                                    </li>
+                                    <li class="list-group-item d-flex align-items-center">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        <small>Format Validation</small>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-center">
+                        <a href="@Url.Action("Index", "Home")" class="btn btn-primary">
+                            <i class="fas fa-arrow-left me-2"></i>Submit Another Form
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

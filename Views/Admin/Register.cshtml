@@ -1,0 +1,322 @@
+@model SafeVault.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Register User - Admin Panel";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-2 d-none d-md-block bg-dark sidebar">
+            <div class="sidebar-sticky">
+                <div class="text-center py-4 border-bottom border-secondary">
+                    <i class="fas fa-shield-alt fa-2x text-primary mb-2"></i>
+                    <h6 class="text-light">Safe Vault Admin</h6>
+                    <small class="text-muted">@User.Identity?.Name</small>
+                </div>
+                
+                <ul class="nav flex-column mt-4">
+                    <li class="nav-item">
+                        <a class="nav-link text-light" href="@Url.Action("Dashboard", "Admin")">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active text-light" href="@Url.Action("Register", "Admin")">
+                            <i class="fas fa-user-plus me-2"></i>Register User
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light" href="@Url.Action("UserManagement", "Admin")">
+                            <i class="fas fa-users me-2"></i>User Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="nav-link text-light btn btn-link text-start w-100">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-10 ms-sm-auto px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-user-plus me-2"></i>Register New User
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="@Url.Action("UserManagement", "Admin")" class="btn btn-outline-secondary">
+                        <i class="fas fa-users me-1"></i>View All Users
+                    </a>
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-user-shield me-2"></i>Create New User Account
+                            </h5>
+                            <small>Admin-only registration with role selection</small>
+                        </div>
+                        
+                        <div class="card-body">
+                            @if (ViewData.ModelState.ErrorCount > 0)
+                            {
+                                <div class="alert alert-danger" role="alert">
+                                    <h6><strong><i class="fas fa-exclamation-triangle me-2"></i>Registration Failed</strong></h6>
+                                    <ul class="mb-0 mt-2">
+                                        @foreach (var modelError in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                        {
+                                            <li>@modelError.ErrorMessage</li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+
+                            <form asp-controller="Admin" asp-action="Register" method="post" autocomplete="off">
+                                @Html.AntiForgeryToken()
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="Username" class="form-label fw-semibold">
+                                            <i class="fas fa-user me-1"></i>Username <span class="text-danger">*</span>
+                                        </label>
+                                        <input asp-for="Username" class="form-control @(ViewData.ModelState["Username"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                                               placeholder="Enter username (3-50 characters)" maxlength="50" />
+                                        <span asp-validation-for="Username" class="invalid-feedback"></span>
+                                        <div class="form-text">
+                                            Only letters, numbers, dots, hyphens, and underscores allowed.
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="Email" class="form-label fw-semibold">
+                                            <i class="fas fa-envelope me-1"></i>Email Address <span class="text-danger">*</span>
+                                        </label>
+                                        <input asp-for="Email" type="email" class="form-control @(ViewData.ModelState["Email"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                                               placeholder="Enter email address" maxlength="100" />
+                                        <span asp-validation-for="Email" class="invalid-feedback"></span>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="Password" class="form-label fw-semibold">
+                                            <i class="fas fa-lock me-1"></i>Password <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <input asp-for="Password" class="form-control @(ViewData.ModelState["Password"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                                                   placeholder="Enter password (min 6 characters)" />
+                                            <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <span asp-validation-for="Password" class="invalid-feedback"></span>
+                                        <div class="form-text">
+                                            Minimum 6 characters required.
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="ConfirmPassword" class="form-label fw-semibold">
+                                            <i class="fas fa-check me-1"></i>Confirm Password <span class="text-danger">*</span>
+                                        </label>
+                                        <input asp-for="ConfirmPassword" class="form-control @(ViewData.ModelState["ConfirmPassword"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                                               placeholder="Confirm password" />
+                                        <span asp-validation-for="ConfirmPassword" class="invalid-feedback"></span>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-4">
+                                        <label asp-for="Role" class="form-label fw-semibold">
+                                            <i class="fas fa-user-tag me-1"></i>User Role <span class="text-danger">*</span>
+                                        </label>
+                                        <select asp-for="Role" class="form-select">
+                                            <option value="0">Regular User</option>
+                                            <option value="1">Administrator</option>
+                                        </select>
+                                        <div class="form-text">
+                                            Select the appropriate role for this user.
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card bg-light h-100">
+                                            <div class="card-body">
+                                                <h6 class="card-title">
+                                                    <i class="fas fa-info-circle text-info me-2"></i>Role Information
+                                                </h6>
+                                                <ul class="small mb-0">
+                                                    <li><strong>Regular User:</strong> Access to user dashboard and profile</li>
+                                                    <li><strong>Administrator:</strong> Full system access and user management</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="@Url.Action("UserManagement", "Admin")" class="btn btn-secondary me-md-2">
+                                        <i class="fas fa-times me-2"></i>Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-user-plus me-2"></i>Create User Account
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card mt-4 bg-light">
+                        <div class="card-body">
+                            <h6 class="text-success">
+                                <i class="fas fa-shield-alt me-2"></i>Security Features Active
+                            </h6>
+                            <div class="row text-center">
+                                <div class="col-md-3 mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-lock me-1"></i>Password Hashing
+                                    </small>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-shield me-1"></i>Input Sanitization
+                                    </small>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-database me-1"></i>Secure Database
+                                    </small>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-user-shield me-1"></i>Role Control
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle password visibility
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.querySelector('input[name="Password"]');
+            
+            if (togglePassword && passwordInput) {
+                togglePassword.addEventListener('click', function() {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    
+                    const icon = this.querySelector('i');
+                    icon.classList.toggle('fa-eye');
+                    icon.classList.toggle('fa-eye-slash');
+                });
+            }
+
+            // Real-time input validation
+            const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"]');
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    validateInput(this);
+                });
+            });
+            
+            function validateInput(input) {
+                const value = input.value;
+                const dangerousPatterns = [
+                    /<script/i,
+                    /javascript:/i,
+                    /on\w+\s*=/i,
+                    /['";].*(-{2}|\/\*)/i,
+                    /(union|select|insert|delete|update|drop)\s/i
+                ];
+                
+                let hasDangerousContent = dangerousPatterns.some(pattern => pattern.test(value));
+                
+                if (hasDangerousContent) {
+                    input.classList.add('border-warning');
+                    showSecurityWarning(input);
+                } else {
+                    input.classList.remove('border-warning');
+                    removeSecurityWarning(input);
+                }
+            }
+            
+            function showSecurityWarning(input) {
+                let existing = input.parentNode.querySelector('.security-warning');
+                if (!existing) {
+                    const warning = document.createElement('div');
+                    warning.className = 'security-warning text-warning small mt-1';
+                    warning.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>This input contains potentially unsafe content.';
+                    input.parentNode.appendChild(warning);
+                }
+            }
+            
+            function removeSecurityWarning(input) {
+                const warning = input.parentNode.querySelector('.security-warning');
+                if (warning) {
+                    warning.remove();
+                }
+            }
+
+            // Role selection helper
+            const roleSelect = document.querySelector('select[name="Role"]');
+            if (roleSelect) {
+                roleSelect.addEventListener('change', function() {
+                    const selectedRole = this.value;
+                    console.log('Selected role:', selectedRole === '1' ? 'Administrator' : 'Regular User');
+                });
+            }
+        });
+    </script>
+}
+
+<style>
+    .sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 100;
+        padding: 0;
+        box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+    }
+
+    .sidebar-sticky {
+        position: relative;
+        top: 0;
+        height: calc(100vh);
+        padding-top: .5rem;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .nav-link.active {
+        background-color: #495057 !important;
+    }
+
+    .border-warning {
+        border-color: #ffc107 !important;
+        box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+    }
+
+    .card {
+        border-radius: 10px;
+    }
+</style>

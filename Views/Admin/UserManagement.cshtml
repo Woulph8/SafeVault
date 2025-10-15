@@ -1,0 +1,451 @@
+@model IEnumerable<SafeVault.Models.UserDto>
+@{
+    ViewData["Title"] = "User Management - Admin Panel";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-2 d-none d-md-block bg-dark sidebar">
+            <div class="sidebar-sticky">
+                <div class="text-center py-4 border-bottom border-secondary">
+                    <i class="fas fa-shield-alt fa-2x text-primary mb-2"></i>
+                    <h6 class="text-light">Safe Vault Admin</h6>
+                    <small class="text-muted">@User.Identity?.Name</small>
+                </div>
+                
+                <ul class="nav flex-column mt-4">
+                    <li class="nav-item">
+                        <a class="nav-link text-light" href="@Url.Action("Dashboard", "Admin")">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light" href="@Url.Action("Register", "Admin")">
+                            <i class="fas fa-user-plus me-2"></i>Register User
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active text-light" href="@Url.Action("UserManagement", "Admin")">
+                            <i class="fas fa-users me-2"></i>User Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="nav-link text-light btn btn-link text-start w-100">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-10 ms-sm-auto px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-users me-2"></i>User Management
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="@Url.Action("Register", "Admin")" class="btn btn-primary">
+                        <i class="fas fa-user-plus me-1"></i>Add New User
+                    </a>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6 mb-3">
+                    <div class="card border-left-primary shadow h-100">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Users</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalUsers">@Model.Count()</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-users fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-3">
+                    <div class="card border-left-success shadow h-100">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Administrators</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800" id="adminCount">@Model.Count(u => u.Role == UserRole.Admin)</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-user-shield fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-3">
+                    <div class="card border-left-info shadow h-100">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Regular Users</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800" id="userCount">@Model.Count(u => u.Role == UserRole.User)</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-user fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-3">
+                    <div class="card border-left-warning shadow h-100">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Recent Registrations</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800" id="recentCount">@Model.Count(u => u.CreatedAt >= DateTime.Now.AddDays(-7))</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-calendar-plus fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filter -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-search me-2"></i>Search and Filter Users
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="get" asp-action="UserManagement" id="searchForm">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Search by Username/Email</label>
+                                <input type="text" name="search" class="form-control" 
+                                       placeholder="Enter username or email..." 
+                                       value="@ViewBag.SearchTerm" />
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Filter by Role</label>
+                                <select name="role" class="form-select">
+                                    <option value="">All Roles</option>
+                                    @{
+                                        var adminSelected = ViewBag.RoleFilter?.ToString() == UserRole.Admin.ToString() ? "selected" : "";
+                                        var userSelected = ViewBag.RoleFilter?.ToString() == UserRole.User.ToString() ? "selected" : "";
+                                    }
+                                    <option value="@((int)UserRole.Admin)" selected="@adminSelected">Administrator</option>
+                                    <option value="@((int)UserRole.User)" selected="@userSelected">Regular User</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Sort by</label>
+                                <select name="sortBy" class="form-select">
+                                    @{
+                                        var sortBy = ViewBag.SortBy as string;
+                                    }
+                                    <option value="username" selected="@(sortBy == "username" ? "selected" : null)">Username</option>
+                                    <option value="email" selected="@(sortBy == "email" ? "selected" : null)">Email</option>
+                                    <option value="role" selected="@(sortBy == "role" ? "selected" : null)">Role</option>
+                                    <option value="created" selected="@(sortBy == "created" ? "selected" : null)">Created Date</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search me-1"></i>Search
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-table me-2"></i>All Users
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Created</th>
+                                        <th>Last Updated</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var user in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    @if (user.Role == UserRole.Admin)
+                                                    {
+                                                        <i class="fas fa-user-shield text-warning me-2"></i>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="fas fa-user text-info me-2"></i>
+                                                    }
+                                                    <strong>@user.Username</strong>
+                                                    @if (user.Username == User.Identity?.Name)
+                                                    {
+                                                        <small class="badge bg-success ms-2">You</small>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td>@user.Email</td>
+                                            <td>
+                                                @if (user.Role == UserRole.Admin)
+                                                {
+                                                    <span class="badge bg-warning text-dark">Administrator</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-info">Regular User</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <small>@user.CreatedAt.ToString("MMM dd, yyyy")</small><br>
+                                                <small class="text-muted">@user.CreatedAt.ToString("HH:mm")</small>
+                                            </td>
+                                            <td>
+                                                <small>@user.UpdatedAt.ToString("MMM dd, yyyy")</small><br>
+                                                <small class="text-muted">@user.UpdatedAt.ToString("HH:mm")</small>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <button type="button" class="btn btn-outline-info" 
+                                                            onclick="viewUser('@user.Id')" title="View Details">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    @if (user.Username != User.Identity?.Name)
+                                                    {
+                                                        <button type="button" class="btn btn-outline-warning" 
+                                                                onclick="editUser('@user.Id')" title="Edit User">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-danger" 
+                                                                onclick="deleteUser('@user.Id', '@user.Username')" title="Delete User">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted small">Current User</span>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Users Found</h5>
+                            <p class="text-muted">No users match your search criteria.</p>
+                            <a href="@Url.Action("Register", "Admin")" class="btn btn-primary">
+                                <i class="fas fa-user-plus me-2"></i>Add First User
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- User Detail Modal -->
+<div class="modal fade" id="userModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user me-2"></i>User Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="userModalBody">
+                <!-- Content loaded via AJAX -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the user <strong id="deleteUsername"></strong>?</p>
+                <p class="text-danger">
+                    <i class="fas fa-warning me-1"></i>
+                    This action cannot be undone and will permanently remove all user data.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" asp-action="DeleteUser" id="deleteForm" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="userId" id="deleteUserId" />
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Delete User
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function viewUser(userId) {
+            fetch(`@Url.Action("GetUserDetails", "Admin")?userId=${userId}`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('userModalBody').innerHTML = html;
+                    new bootstrap.Modal(document.getElementById('userModal')).show();
+                })
+                .catch(error => {
+                    console.error('Error loading user details:', error);
+                    alert('Error loading user details. Please try again.');
+                });
+        }
+
+        function editUser(userId) {
+            window.location.href = `@Url.Action("EditUser", "Admin")?userId=${userId}`;
+        }
+
+        function deleteUser(userId, username) {
+            document.getElementById('deleteUserId').value = userId;
+            document.getElementById('deleteUsername').textContent = username;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-submit search form on input change with debounce
+            const searchInput = document.querySelector('input[name="search"]');
+            const roleSelect = document.querySelector('select[name="role"]');
+            const sortSelect = document.querySelector('select[name="sortBy"]');
+            
+            let searchTimeout;
+            
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        document.getElementById('searchForm').submit();
+                    }, 500);
+                });
+            }
+            
+            if (roleSelect) {
+                roleSelect.addEventListener('change', function() {
+                    document.getElementById('searchForm').submit();
+                });
+            }
+            
+            if (sortSelect) {
+                sortSelect.addEventListener('change', function() {
+                    document.getElementById('searchForm').submit();
+                });
+            }
+        });
+    </script>
+}
+
+<style>
+    .sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 100;
+        padding: 0;
+        box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+    }
+
+    .sidebar-sticky {
+        position: relative;
+        top: 0;
+        height: calc(100vh);
+        padding-top: .5rem;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .nav-link.active {
+        background-color: #495057 !important;
+    }
+
+    .border-left-primary {
+        border-left: 0.25rem solid #4e73df !important;
+    }
+
+    .border-left-success {
+        border-left: 0.25rem solid #1cc88a !important;
+    }
+
+    .border-left-info {
+        border-left: 0.25rem solid #36b9cc !important;
+    }
+
+    .border-left-warning {
+        border-left: 0.25rem solid #f6c23e !important;
+    }
+
+    .text-gray-800 {
+        color: #5a5c69 !important;
+    }
+
+    .text-gray-300 {
+        color: #dddfeb !important;
+    }
+
+    .card {
+        border-radius: 10px;
+    }
+
+    .table th {
+        background-color: #f8f9fc;
+        border-color: #e3e6f0;
+    }
+
+    .btn-group-sm > .btn {
+        padding: 0.25rem 0.5rem;
+    }
+</style>

@@ -1,0 +1,150 @@
+﻿@model SafeVault.Models.UserInputModel
+@{
+    ViewData["Title"] = "Safe Vault - Secure User Input";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">Secure User Registration</h3>
+                    <small class="text-muted">All inputs are validated and sanitized for security</small>
+                </div>
+                <div class="card-body">
+                    @if (ViewData.ModelState.ErrorCount > 0)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <h6><strong>Please correct the following errors:</strong></h6>
+                            <ul class="mb-0">
+                                @foreach (var modelError in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                {
+                                    <li>@modelError.ErrorMessage</li>
+                                }
+                            </ul>
+                        </div>
+                    }
+
+                    <form asp-controller="Home" asp-action="Submit" method="post" autocomplete="off">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="mb-3">
+                            <label asp-for="Username" class="form-label">
+                                Username <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Username" class="form-control @(ViewData.ModelState["Username"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                                   placeholder="Enter username (3-50 characters, alphanumeric only)" 
+                                   maxlength="50" />
+                            <span asp-validation-for="Username" class="invalid-feedback"></span>
+                            <div class="form-text">
+                                Username can only contain letters, numbers, dots, hyphens, and underscores.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label">
+                                Email Address <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Email" type="email" class="form-control @(ViewData.ModelState["Email"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                                   placeholder="Enter your email address" 
+                                   maxlength="100" />
+                            <span asp-validation-for="Email" class="invalid-feedback"></span>
+                            <div class="form-text">
+                                Please enter a valid email address.
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-shield-alt me-2"></i>Submit Securely
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="mt-4">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title text-success">
+                                    <i class="fas fa-lock me-2"></i>Security Features Active
+                                </h6>
+                                <ul class="list-unstyled small mb-0">
+                                    <li><i class="fas fa-check text-success me-1"></i> SQL Injection Protection</li>
+                                    <li><i class="fas fa-check text-success me-1"></i> XSS Attack Prevention</li>
+                                    <li><i class="fas fa-check text-success me-1"></i> Input Sanitization</li>
+                                    <li><i class="fas fa-check text-success me-1"></i> CSRF Token Protection</li>
+                                    <li><i class="fas fa-check text-success me-1"></i> Data Validation</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Additional client-side validation and security measures
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const inputs = form.querySelectorAll('input[type="text"], input[type="email"]');
+            
+            // Real-time validation feedback
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    validateInput(this);
+                });
+                
+                input.addEventListener('paste', function(e) {
+                    // Warn about pasting potentially unsafe content
+                    setTimeout(() => validateInput(this), 10);
+                });
+            });
+            
+            function validateInput(input) {
+                const value = input.value;
+                const dangerousPatterns = [
+                    /<script/i,
+                    /javascript:/i,
+                    /on\w+\s*=/i,
+                    /['";].*(-{2}|\/\*)/i,
+                    /(union|select|insert|delete|update|drop)\s/i
+                ];
+                
+                let hasDangerousContent = dangerousPatterns.some(pattern => pattern.test(value));
+                
+                if (hasDangerousContent) {
+                    input.classList.add('is-invalid');
+                    showWarning(input, 'This input contains potentially unsafe content.');
+                } else {
+                    input.classList.remove('is-invalid');
+                    removeWarning(input);
+                }
+            }
+            
+            function showWarning(input, message) {
+                let existing = input.parentNode.querySelector('.client-validation-warning');
+                if (!existing) {
+                    const warning = document.createElement('div');
+                    warning.className = 'client-validation-warning text-warning small mt-1';
+                    // Fix XSS: Use textContent instead of innerHTML for user-controlled message
+                    warning.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>';
+                    const messageSpan = document.createElement('span');
+                    messageSpan.textContent = message;
+                    warning.appendChild(messageSpan);
+                    input.parentNode.appendChild(warning);
+                }
+            }
+            
+            function removeWarning(input) {
+                const warning = input.parentNode.querySelector('.client-validation-warning');
+                if (warning) {
+                    warning.remove();
+                }
+            }
+        });
+    </script>
+}

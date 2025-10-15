@@ -1,0 +1,395 @@
+@model SafeVault.Models.UserDto
+@{
+    ViewData["Title"] = "User Dashboard";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Welcome Section -->
+        <div class="col-12 mb-4">
+            <div class="card border-primary shadow">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-user-circle fa-4x text-primary"></i>
+                    </div>
+                    <h2 class="card-title text-primary">Welcome, @(Model?.Username ?? "User")!</h2>
+                    <p class="card-text text-muted">
+                        You are logged in as a <strong>@(Model?.Role.ToString() ?? "User")</strong> user.
+                    </p>
+                    <small class="text-muted">
+                        Last login: @DateTime.Now.ToString("MMMM dd, yyyy 'at' HH:mm")
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Profile Information -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>Profile Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="fw-semibold text-muted">Username</label>
+                            <p class="fs-5">@Model.Username</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="fw-semibold text-muted">Email Address</label>
+                            <p class="fs-5">@Model.Email</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="fw-semibold text-muted">User Role</label>
+                            <p>
+                                @if (Model.Role == UserRole.Admin)
+                                {
+                                    <span class="badge bg-warning text-dark fs-6">
+                                        <i class="fas fa-user-shield me-1"></i>Administrator
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-info fs-6">
+                                        <i class="fas fa-user me-1"></i>Regular User
+                                    </span>
+                                }
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="fw-semibold text-muted">Member Since</label>
+                            <p class="fs-5">@Model.CreatedAt.ToString("MMMM dd, yyyy")</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="button" class="btn btn-outline-primary" onclick="editProfile()">
+                            <i class="fas fa-edit me-2"></i>Edit Profile
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="changePassword()">
+                            <i class="fas fa-key me-2"></i>Change Password
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        @if (Model.Role == UserRole.Admin)
+                        {
+                            <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-warning">
+                                <i class="fas fa-tachometer-alt me-2"></i>Admin Panel
+                            </a>
+                            <a href="@Url.Action("Register", "Admin")" class="btn btn-outline-primary">
+                                <i class="fas fa-user-plus me-2"></i>Add User
+                            </a>
+                            <a href="@Url.Action("UserManagement", "Admin")" class="btn btn-outline-info">
+                                <i class="fas fa-users me-2"></i>Manage Users
+                            </a>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-outline-primary" onclick="viewActivity()">
+                                <i class="fas fa-history me-2"></i>View Activity
+                            </button>
+                            <button type="button" class="btn btn-outline-success" onclick="updatePreferences()">
+                                <i class="fas fa-cog me-2"></i>Preferences
+                            </button>
+                        }
+                        <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Security Status -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>Security Status
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-check-circle text-success fa-2x me-3"></i>
+                        <div>
+                            <h6 class="mb-0">Account Secure</h6>
+                            <small class="text-muted">Your account is protected with secure authentication</small>
+                        </div>
+                    </div>
+
+                    <div class="row text-center">
+                        <div class="col-6 mb-2">
+                            <div class="border rounded p-2">
+                                <i class="fas fa-lock text-success"></i>
+                                <small class="d-block text-muted">Password Protected</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-2">
+                            <div class="border rounded p-2">
+                                <i class="fas fa-shield text-success"></i>
+                                <small class="d-block text-muted">Role-Based Access</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-2">
+                            <div class="border rounded p-2">
+                                <i class="fas fa-database text-success"></i>
+                                <small class="d-block text-muted">Secure Database</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-2">
+                            <div class="border rounded p-2">
+                                <i class="fas fa-user-shield text-success"></i>
+                                <small class="d-block text-muted">Input Sanitization</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>Recent Activity
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-sign-in-alt text-success me-2"></i>
+                                <div>
+                                    <strong>Logged In</strong><br>
+                                    <small class="text-muted">Today at @DateTime.Now.ToString("HH:mm")</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user-check text-primary me-2"></i>
+                                <div>
+                                    <strong>Profile Accessed</strong><br>
+                                    <small class="text-muted">@Model.UpdatedAt.ToString("MMMM dd, yyyy 'at' HH:mm")</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user-plus text-info me-2"></i>
+                                <div>
+                                    <strong>Account Created</strong><br>
+                                    <small class="text-muted">@Model.CreatedAt.ToString("MMMM dd, yyyy 'at' HH:mm")</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Information -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow bg-light">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">
+                        <i class="fas fa-info-circle me-2"></i>Safe Vault System Information
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <small class="text-success">
+                                <i class="fas fa-check me-1"></i>Secure Authentication
+                            </small>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <small class="text-success">
+                                <i class="fas fa-check me-1"></i>Input Validation
+                            </small>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <small class="text-success">
+                                <i class="fas fa-check me-1"></i>SQL Injection Protection
+                            </small>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <small class="text-success">
+                                <i class="fas fa-check me-1"></i>Role-Based Authorization
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>Edit Profile
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Profile editing functionality will be available in the next update.
+                </p>
+                <p class="text-muted">
+                    For now, you can contact an administrator to update your profile information.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-key me-2"></i>Change Password
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Password change functionality will be available in the next update.
+                </p>
+                <p class="text-muted">
+                    For security reasons, please contact an administrator to reset your password.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function editProfile() {
+            new bootstrap.Modal(document.getElementById('editProfileModal')).show();
+        }
+
+        function changePassword() {
+            new bootstrap.Modal(document.getElementById('changePasswordModal')).show();
+        }
+
+        function viewActivity() {
+            alert('Activity log functionality will be available soon!');
+        }
+
+        function updatePreferences() {
+            alert('User preferences functionality will be available soon!');
+        }
+
+        // Welcome animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+
+            // Update last login time periodically
+            setInterval(() => {
+                const timeElements = document.querySelectorAll('.last-login-time');
+                timeElements.forEach(element => {
+                    element.textContent = new Date().toLocaleString();
+                });
+            }, 60000); // Update every minute
+        });
+    </script>
+}
+
+<style>
+    .card {
+        border-radius: 10px;
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .timeline-item:before {
+        content: '';
+        position: absolute;
+        left: 8px;
+        top: 20px;
+        bottom: -15px;
+        width: 2px;
+        background-color: #dee2e6;
+    }
+
+    .timeline-item:last-child:before {
+        display: none;
+    }
+
+    .border-primary {
+        border-color: #007bff !important;
+    }
+
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+
+    .btn {
+        transition: all 0.2s ease-in-out;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .fa-4x {
+        font-size: 4rem;
+    }
+</style>
